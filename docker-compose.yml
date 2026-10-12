@@ -1,0 +1,18 @@
+services:
+  discord-voice-streamer:
+    build: .
+    container_name: discord-voice-streamer
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-36363}:${PORT:-36363}"
+    volumes:
+      # Persist server configs (roles etc.) across restarts and redeploys
+      - ./server_configs.json:/app/server_configs.json
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:'+(process.env.PORT||36363)+'/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

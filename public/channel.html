@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{TITLE}} - Live</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #1e1e1e;
+        color: #fff;
+        text-align: center;
+        margin-top: 50px;
+      }
+      .card {
+        background: #2f3136;
+        padding: 30px;
+        display: inline-block;
+        border-radius: 10px;
+        max-width: 420px;
+        width: 100%;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        cursor: pointer;
+        background: #5865f2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+      button.playing {
+        background: #ed4245;
+      }
+      .server-name {
+        color: #aaa;
+        font-size: 14px;
+        margin-top: 4px;
+      }
+      canvas {
+        background: #1a1b1e;
+        border-radius: 6px;
+        margin-top: 20px;
+        width: 100%;
+        height: 100px;
+        display: block;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/opus-decoder@0.7.2/dist/opus-decoder.min.js"></script>
+  </head>
+  <body>
+    <div class="card">
+      <h2 id="channelTitle">Loading Channel...</h2>
+      <div id="guildTitle" class="server-name"></div>
+      <p id="status">Click below to start listening.</p>
+      <canvas id="visualizer"></canvas>
+      <button id="toggleBtn">Start Listening</button>
+    </div>
+
+    <script>
+      // Extract Channel ID from the URL path (/channel/123456789)
+      const pathParts = window.location.pathname.split("/");
+      const targetChannelId = pathParts[pathParts.length - 1];
+
+      const channelTitle = document.getElementById("channelTitle");
+      const guildTitle = document.getElementById("guildTitle");
+      const statusText = document.getElementById("status");
+      const toggleBtn = document.getElementById("toggleBtn");
+      const canvas = document.getElementById("visualizer");
+      const canvasCtx = canvas.getContext("2d");
+
+      let audioCtx;
+      let analyser;
+      let isListening = false;
+      const userDecoders = new Map();
+
+      // Resize canvas dimensions to match CSS layout pixels
+      function initCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
+      window.addEventListener("resize", initCanvas);
+      initCanvas();
+
+      toggleBtn.addEventListener("click", async () => {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: 48000,
+          });
+
+          // Setup AnalyserNode for the visualizer
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.connect(audioCtx.destination);
+
+          // Start the visualizer render loop
+          drawVisualizer();
+        }
+        if (audioCtx.state === "suspended") {
+          await audioCtx.resume();
+        }
+
+        isListening = !isListening;
+        toggleBtn.textContent = isListening ? "Mute Audio" : "Start Listening";
+        toggleBtn.className = isListening ? "playing" : "";
+        statusText.textContent = isListening
+          ? "Live audio stream active."
+          : "Paused.";
+      });
+
+      function drawVisualizer() {
+        requestAnimationFrame(drawVisualizer);
+
+        canvasCtx.fillStyle = "#1a1b1e";
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (!isListening || !analyser) return;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteFrequencyData(dataArray);
+
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * canvas.height;
+
+          canvasCtx.fillStyle = "#5865f2";
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+          x += barWidth + 1;
+        }
+      }
+
+      // Initialize WebSocket connection
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const ws = new WebSocket(`${protocol}//${window.location.host}`);
+      ws.binaryType = "arraybuffer";
+
+      ws.onmessage = async (event) => {
+        // Handle Channel List Metadata to resolve Channel Name
+        if (typeof event.data === "string") {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "channels") {
+            const match = msg.data.find((ch) => ch.id === targetChannelId);
+            if (match) {
+              channelTitle.textContent = match.name;
+              guildTitle.textContent = match.guildName;
+            } else {
+              channelTitle.textContent = `Channel: ${targetChannelId}`;
+            }
+          }
+          return;
+        }
+
+        if (!isListening || !audioCtx) return;
+
+        const buffer = new Uint8Array(event.data);
+        const chLen = buffer[0];
+        const uLen = buffer[1];
+
+        const channelId = new TextDecoder().decode(
+          buffer.subarray(2, 2 + chLen),
+        );
+
+        // STRICT FILTER: Drop packet if it's not for this channel
+        if (channelId !== targetChannelId) return;
+
+        const userId = new TextDecoder().decode(
+          buffer.subarray(2 + chLen, 2 + chLen + uLen),
+        );
+        const opusPacket = buffer.subarray(2 + chLen + uLen);
+
+        let userState = userDecoders.get(userId);
+        if (!userState) {
+          const { OpusDecoder } = window["opus-decoder"];
+          const decoder = new OpusDecoder({ sampleRate: 48000, channels: 2 });
+          await decoder.ready;
+          userState = { decoder, nextTime: 0 };
+          userDecoders.set(userId, userState);
+        }
+
+        const decoded = userState.decoder.decodeFrame(opusPacket);
+        if (
+          !decoded ||
+          !decoded.channelData ||
+          decoded.channelData.length === 0
+        )
+          return;
+
+        const left = decoded.channelData[0];
+        const right = decoded.channelData[1] || left;
+
+        const audioBuffer = audioCtx.createBuffer(2, left.length, 48000);
+        audioBuffer.copyToChannel(left, 0);
+        audioBuffer.copyToChannel(right, 1);
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+
+        // Connect source into the analyser node instead of directly to destination
+        source.connect(analyser);
+
+        const curr = audioCtx.currentTime;
+        if (userState.nextTime < curr) userState.nextTime = curr + 0.12;
+
+        source.start(userState.nextTime);
+        userState.nextTime += audioBuffer.duration;
+      };
+    </script>
+  </body>
+</html>

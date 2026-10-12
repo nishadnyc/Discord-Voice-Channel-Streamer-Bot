@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discord Voice Streamer — Listen to Discord Voice Channels Live in Your Browser</title>
+  <meta name="description" content="Discord Voice Streamer is a free, open-source, self-hosted Discord bot that streams voice channel audio live to the web. Invite the bot, run /join, and listen from any browser. Includes text-to-speech, an admin panel, and Docker support." />
+  <meta name="keywords" content="discord bot, discord voice channel, live stream discord audio, discord text to speech, discord tts bot, self-hosted discord bot, discord.js bot, docker discord bot, listen to discord in browser, voice channel streamer" />
+  <meta name="author" content="nishadnyc" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://nishadnyc.github.io/Discord-Voice-Channel-Streamer-Bot/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Discord Voice Streamer" />
+  <meta property="og:title" content="Discord Voice Streamer — Listen to Discord Voice Channels Live in Your Browser" />
+  <meta property="og:description" content="Free open-source Discord bot: stream any voice channel live to the web, talk back with text-to-speech. Docker-ready, self-hosted." />
+  <meta property="og:url" content="https://nishadnyc.github.io/Discord-Voice-Channel-Streamer-Bot/" />
+  <meta property="og:image" content="https://nishadnyc.github.io/Discord-Voice-Channel-Streamer-Bot/logo.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Discord Voice Streamer — Listen to Discord Voice Channels Live in Your Browser" />
+  <meta name="twitter:description" content="Free open-source Discord bot: stream any voice channel live to the web, talk back with text-to-speech. Docker-ready, self-hosted." />
+  <meta name="twitter:image" content="https://nishadnyc.github.io/Discord-Voice-Channel-Streamer-Bot/logo.png" />
+
+  <link rel="icon" type="image/png" href="logo.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Discord Voice Streamer",
+    "applicationCategory": "CommunicationApplication",
+    "operatingSystem": "Any (Docker) / Node.js 22+",
+    "description": "Free open-source Discord bot that streams voice channel audio live to the web with text-to-speech, an admin panel, and Docker support.",
+    "url": "https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot",
+    "author": { "@type": "Person", "name": "nishadnyc" },
+    "license": "https://opensource.org/licenses/MIT",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
+  <style>
+    :root {
+      --blurple: #5865F2;
+      --cyan: #00e5ff;
+      --bg: #0b0b18;
+      --card: #151527;
+      --text: #e8e8f0;
+      --muted: #9a9ab0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1024px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 20px; }
+    .brand img { width: 40px; height: 40px; border-radius: 10px; }
+    .btn {
+      display: inline-block; padding: 12px 28px; border-radius: 10px;
+      background: var(--blurple); color: #fff; font-weight: 600;
+    }
+    .btn:hover { text-decoration: none; filter: brightness(1.1); }
+    .btn.ghost { background: transparent; border: 1px solid var(--blurple); color: var(--text); }
+
+    .hero { text-align: center; padding: 72px 0 56px; }
+    .hero img.logo { width: 140px; height: 140px; border-radius: 28px; margin-bottom: 24px; box-shadow: 0 0 60px rgba(88,101,242,.45); }
+    .hero h1 { font-size: 44px; line-height: 1.15; margin-bottom: 16px; }
+    .hero h1 span { color: var(--cyan); }
+    .hero p.sub { font-size: 19px; color: var(--muted); max-width: 640px; margin: 0 auto 32px; }
+    .cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    section { padding: 48px 0; }
+    h2 { font-size: 30px; margin-bottom: 8px; text-align: center; }
+    p.section-sub { text-align: center; color: var(--muted); margin-bottom: 32px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--card); border-radius: 14px; padding: 24px;
+      border: 1px solid rgba(88,101,242,.18);
+    }
+    .card .emoji { font-size: 32px; }
+    .card h3 { margin: 12px 0 8px; font-size: 18px; }
+    .card p { color: var(--muted); font-size: 15px; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; counter-reset: step; }
+    .step { background: var(--card); border-radius: 14px; padding: 24px; border: 1px solid rgba(88,101,242,.18); }
+    .step .num {
+      display: inline-flex; width: 36px; height: 36px; border-radius: 50%;
+      background: var(--blurple); color: #fff; font-weight: 700;
+      align-items: center; justify-content: center; margin-bottom: 12px;
+    }
+    .step h3 { margin-bottom: 8px; }
+    .step p, .step code { color: var(--muted); font-size: 15px; }
+
+    pre {
+      background: #0e0e1e; border: 1px solid rgba(88,101,242,.25);
+      border-radius: 12px; padding: 20px; overflow-x: auto; font-size: 14px;
+    }
+    pre code { color: #c8f542; }
+
+    .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .shot-img {
+      width: 100%; border-radius: 14px; border: 1px solid rgba(88,101,242,.25);
+      box-shadow: 0 8px 32px rgba(0,0,0,.35);
+    }
+
+    .faq details { background: var(--card); border-radius: 12px; padding: 18px 22px; margin-bottom: 12px; border: 1px solid rgba(88,101,242,.18); }
+    .faq summary { font-weight: 600; cursor: pointer; }
+    .faq p { color: var(--muted); margin-top: 10px; font-size: 15px; }
+
+    footer { text-align: center; padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+    footer img { width: 48px; height: 48px; border-radius: 12px; margin-bottom: 12px; }
+
+    @media (max-width: 640px) { .hero h1 { font-size: 32px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><img src="logo.png" alt="Discord Voice Streamer logo" /> Discord Voice Streamer</div>
+      <a class="btn ghost" href="https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot">GitHub</a>
+    </header>
+
+    <div class="hero">
+      <img class="logo" src="logo.png" alt="Discord Voice Streamer — Discord bot that streams voice channels live to the web" />
+      <h1>Listen to any Discord <span>voice channel live</span>, right in your browser</h1>
+      <p class="sub">Discord Voice Streamer is a free, open-source, self-hosted Discord bot. Invite it, run <strong>/join</strong>, and share a link — anyone can listen live, no Discord account needed. Talk back into the channel with text-to-speech.</p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot">⭐ Get it on GitHub</a>
+        <a class="btn ghost" href="#install">🚀 Install in 5 minutes</a>
+      </div>
+    </div>
+
+    <section id="features">
+      <h2>✨ What it does</h2>
+      <p class="section-sub">Everything you need to take a Discord voice channel to the web.</p>
+      <div class="grid">
+        <div class="card"><div class="emoji">🔊</div><h3>Live voice streaming</h3><p>The bot joins a voice channel and relays crystal-clear Opus audio to a web page in real time.</p></div>
+        <div class="card"><div class="emoji">🗣️</div><h3>Text-to-speech</h3><p>Type a message in the admin panel or with <code>/tts</code> and the bot speaks it into the voice channel.</p></div>
+        <div class="card"><div class="emoji">🖥️</div><h3>Admin panel</h3><p>Secure Discord OAuth login. Join or leave channels remotely and manage per-server roles.</p></div>
+        <div class="card"><div class="emoji">⚡</div><h3>Slash commands</h3><p><code>/join</code>, <code>/leave</code>, <code>/tts</code> and <code>/help</code> — control everything without leaving Discord.</p></div>
+        <div class="card"><div class="emoji">🐳</div><h3>Docker-ready</h3><p>One command to run. ffmpeg, Node.js and all dependencies ship inside the image.</p></div>
+        <div class="card"><div class="emoji">🔒</div><h3>Private by design</h3><p>Self-hosted on your own server. Stream links are unlisted; the admin panel is login-gated.</p></div>
+      </div>
+    </section>
+
+    <section id="how">
+      <h2>🛠️ How it works</h2>
+      <p class="section-sub">From zero to live audio in three steps.</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h3>Invite the bot</h3><p>Create a Discord application, grab the bot token, and invite it to your server with Connect + Speak permissions.</p></div>
+        <div class="step"><div class="num">2</div><h3>Run <code>/join</code></h3><p>Join a voice channel and run <code>/join</code>. The bot replies with a unique live stream link.</p></div>
+        <div class="step"><div class="num">3</div><h3>Share the link</h3><p>Anyone with the link listens live in their browser — no Discord account required.</p></div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <h2>📸 Screenshots</h2>
+      <p class="section-sub">A look at the admin panel and the live listening page.</p>
+      <div class="shots">
+        <img class="shot-img" src="screenshot-admin.png" alt="Discord Voice Streamer admin panel — connect the bot, manage streams, TTS and roles" />
+        <img class="shot-img" src="screenshot-listen.png" alt="Discord Voice Streamer live listening page with audio visualizer" />
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>🚀 Install in 5 minutes</h2>
+      <p class="section-sub">Docker is the recommended way. Node.js 22+ works too.</p>
+      <pre><code>git clone https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot.git
+cd Discord-Voice-Channel-Streamer-Bot
+
+cp .env.example .env   # fill in your Discord credentials
+
+docker compose up --build -d</code></pre>
+      <p style="text-align:center; margin-top:20px; color: var(--muted);">Full guide in the <a href="https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot#readme">README</a> — including the Discord Developer Portal setup.</p>
+    </section>
+
+    <section id="faq" class="faq">
+      <h2>❓ FAQ</h2>
+      <p class="section-sub">Quick answers to common questions.</p>
+      <details>
+        <summary>Do listeners need a Discord account?</summary>
+        <p>No. The stream link opens a plain web page — anyone with the link can listen live. Only the admin panel requires a Discord login.</p>
+      </details>
+      <details>
+        <summary>Is it free?</summary>
+        <p>Yes — MIT licensed, free forever. You just need somewhere to run it (any VPS, home server, or even a Raspberry Pi with Docker).</p>
+      </details>
+      <details>
+        <summary>Can the bot talk back into the channel?</summary>
+        <p>Yes. Use <code>/tts</code> in Discord or the admin panel to make the bot speak any text into the voice channel.</p>
+      </details>
+      <details>
+        <summary>Does it work on mobile?</summary>
+        <p>The listening page works in any modern mobile browser. The admin panel is fully usable on phones too.</p>
+      </details>
+    </section>
+
+    <footer>
+      <img src="logo.png" alt="Discord Voice Streamer logo" />
+      <p>Discord Voice Streamer — free &amp; open source (MIT) by <a href="https://github.com/nishadnyc">nishadnyc</a></p>
+      <p><a href="https://github.com/nishadnyc/Discord-Voice-Channel-Streamer-Bot">GitHub</a> · Not affiliated with Discord Inc.</p>
+    </footer>
+  </div>
+</body>
+</html>

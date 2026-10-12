@@ -1,0 +1,33 @@
+{
+  "author": "nishadnyc",
+  "dependencies": {
+    "@discordjs/voice": "^0.19.2",
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "google-tts-api": "^0.0.6",
+    "opusscript": "^0.0.8",
+    "ws": "^8.21.3"
+  },
+  "description": "Stream Discord voice channels live to the web, with TTS announcements and an admin panel",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "voice",
+    "streamer",
+    "tts"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "discord-voice-streamer",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test.js"
+  },
+  "type": "commonjs",
+  "version": "1.0.0"
+}

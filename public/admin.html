@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{TITLE}} - Admin Panel</title>
+    <style>
+      :root {
+        --blurple: #5865f2;
+        --blurple-dark: #4752c4;
+        --cyan: #00e5ff;
+        --bg: #0b0b18;
+        --card: #141428;
+        --border: rgba(88, 101, 242, 0.22);
+        --text: #eef0ff;
+        --muted: #9aa0c3;
+        --danger: #f38ba8;
+        --success: #a6e3a1;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+        padding: 28px 20px 60px;
+        background:
+          radial-gradient(600px 300px at 15% -5%, rgba(88, 101, 242, 0.18), transparent),
+          radial-gradient(600px 300px at 85% -5%, rgba(0, 229, 255, 0.08), transparent),
+          var(--bg);
+      }
+      .container { max-width: 920px; margin: 0 auto; animation: fadeIn 0.4s ease; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+      .header {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 16px; flex-wrap: wrap; margin-bottom: 28px;
+      }
+      .brand { display: flex; align-items: center; gap: 14px; }
+      .brand .mic {
+        width: 52px; height: 52px; border-radius: 16px; font-size: 28px;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, var(--blurple), #7b5cf0);
+        box-shadow: 0 0 24px rgba(88, 101, 242, 0.5);
+      }
+      .brand h1 { font-size: 1.5rem; letter-spacing: -0.01em; }
+      .brand h1 span {
+        background: linear-gradient(90deg, var(--blurple), var(--cyan));
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+      .userbox { display: flex; align-items: center; gap: 12px; }
+      .userchip {
+        background: var(--card); border: 1px solid var(--border);
+        padding: 8px 14px; border-radius: 999px; font-size: 0.85rem; color: var(--muted);
+      }
+      .userchip b { color: var(--text); }
+
+      .btn {
+        border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+        padding: 10px 18px; border-radius: 10px; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 8px;
+        transition: transform 0.12s, filter 0.15s, box-shadow 0.15s;
+        font-family: inherit;
+      }
+      .btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+      .btn:active { transform: translateY(0); }
+      .btn-join {
+        background: linear-gradient(135deg, var(--blurple), #7b5cf0);
+        color: #fff; box-shadow: 0 4px 18px rgba(88, 101, 242, 0.4);
+        white-space: nowrap;
+      }
+      .btn-speak {
+        background: linear-gradient(135deg, #00c8e0, var(--cyan));
+        color: #062a33; box-shadow: 0 4px 18px rgba(0, 229, 255, 0.25);
+        white-space: nowrap;
+      }
+      .btn-save {
+        background: var(--blurple); color: #fff; margin-top: 16px;
+        box-shadow: 0 4px 14px rgba(88, 101, 242, 0.35);
+      }
+      .btn-disconnect {
+        background: rgba(243, 139, 168, 0.1); color: var(--danger);
+        border: 1px solid rgba(243, 139, 168, 0.35);
+        padding: 7px 13px; font-size: 0.8rem;
+      }
+      .btn-disconnect:hover { background: rgba(243, 139, 168, 0.2); }
+      .btn-logout {
+        background: transparent; color: var(--danger);
+        border: 1px solid rgba(243, 139, 168, 0.4); padding: 8px 16px; font-size: 0.85rem;
+      }
+      .btn-logout:hover { background: rgba(243, 139, 168, 0.12); }
+
+      .server-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 18px; padding: 26px; margin-bottom: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      }
+      .server-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+      .server-avatar {
+        width: 48px; height: 48px; border-radius: 14px; font-size: 22px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center; color: #fff;
+        background: linear-gradient(135deg, var(--blurple), var(--cyan));
+        flex-shrink: 0;
+      }
+      .server-head h2 { font-size: 1.3rem; letter-spacing: -0.01em; }
+
+      .panel-section { margin-top: 24px; }
+      .section-title {
+        font-weight: 700; font-size: 0.95rem; margin-bottom: 12px;
+        color: var(--text); display: flex; align-items: center; gap: 8px;
+      }
+      .hint { font-size: 0.83rem; color: var(--muted); margin: -6px 0 10px; }
+
+      .live-dot {
+        width: 9px; height: 9px; border-radius: 50%; background: #3bff8f;
+        box-shadow: 0 0 10px #3bff8f; animation: pulse 1.6s infinite;
+        display: inline-block;
+      }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+      .join-control { display: flex; gap: 10px; }
+      select.channel-select, input.channel-select {
+        background: #0e0e20; color: var(--text);
+        border: 1px solid var(--border); padding: 11px 14px;
+        border-radius: 10px; flex-grow: 1; outline: none; font-size: 0.9rem;
+        font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      select.channel-select:focus, input.channel-select:focus {
+        border-color: var(--blurple); box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+      }
+      select.channel-select option { background: #141428; }
+
+      .channel-item {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        background: rgba(88, 101, 242, 0.07); border: 1px solid var(--border);
+        padding: 12px 16px; border-radius: 12px; margin-bottom: 10px;
+        transition: background 0.15s;
+      }
+      .channel-item:hover { background: rgba(88, 101, 242, 0.12); }
+      .channel-name { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+      .channel-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      .stream-link {
+        color: var(--cyan); text-decoration: none; font-weight: 700; font-size: 0.85rem;
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 7px 13px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.3);
+        background: rgba(0, 229, 255, 0.06); transition: background 0.15s;
+      }
+      .stream-link:hover { background: rgba(0, 229, 255, 0.14); }
+
+      .role-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+      .role-tag {
+        display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+        background: #0e0e20; border: 1px solid var(--border);
+        padding: 8px 14px; border-radius: 999px; font-size: 0.85rem;
+        transition: border-color 0.15s, background 0.15s; user-select: none;
+      }
+      .role-tag:hover { border-color: var(--blurple); }
+      .role-tag input { accent-color: var(--blurple); width: 15px; height: 15px; cursor: pointer; }
+
+      .empty-state {
+        color: var(--muted); font-style: italic; font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border);
+        border-radius: 12px; padding: 16px; text-align: center;
+      }
+      .loading { text-align: center; color: var(--muted); padding: 60px 0; font-size: 1rem; }
+      .loading::after { content: "…"; animation: dots 1.2s infinite; }
+      @keyframes dots { 0% { content: ""; } 33% { content: "."; } 66% { content: ".."; } 100% { content: "..."; } }
+
+      @media (max-width: 560px) {
+        .join-control { flex-direction: column; }
+        .header { flex-direction: column; align-items: flex-start; }
+        .channel-item { flex-direction: column; align-items: stretch; }
+        .channel-actions { justify-content: flex-end; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="brand">
+          <div class="mic">🎙️</div>
+          <h1><span>{{TITLE}}</span> Admin</h1>
+        </div>
+        <div class="userbox">
+          <span class="userchip" id="userInfo"></span>
+          <a href="/auth/logout" class="btn btn-logout">Logout</a>
+        </div>
+      </div>
+
+      <div id="serversContainer"><div class="loading">Loading server data</div></div>
+    </div>
+
+    <script>
+      function esc(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      async function loadAdminData() {
+        try {
+          const res = await fetch("/api/admin/data");
+          if (!res.ok) return (window.location.href = "/auth/discord");
+
+          const data = await res.json();
+          document.getElementById("userInfo").innerHTML =
+            `Logged in as <b>${esc(data.user.username)}</b>`;
+
+          const container = document.getElementById("serversContainer");
+          if (!data.servers || data.servers.length === 0) {
+            container.innerHTML =
+              '<div class="server-card"><div class="empty-state">No servers found where you have Manage permissions.</div></div>';
+            return;
+          }
+
+          container.innerHTML = data.servers
+            .map(
+              (server) => `
+          <div class="server-card">
+            <div class="server-head">
+              <div class="server-avatar">${esc(server.guildName.charAt(0).toUpperCase())}</div>
+              <h2>${esc(server.guildName)}</h2>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-title">🔌 Connect Bot to Channel</div>
+              ${
+                server.voiceChannels && server.voiceChannels.length > 0
+                  ? `
+                  <div class="join-control">
+                    <select id="select-${server.guildId}" class="channel-select">
+                      <option value="" disabled selected>-- Select a Voice Channel --</option>
+                      ${server.voiceChannels.map((vc) => `<option value="${vc.id}">🔊 ${esc(vc.name)}</option>`).join("")}
+                    </select>
+                    <button class="btn btn-join" onclick="joinChannel('${server.guildId}')">⚡ Connect Bot</button>
+                  </div>
+                `
+                  : '<div class="empty-state">No accessible voice channels found for this bot.</div>'
+              }
+            </div>
+
+            <div class="panel-section">
+              <div class="section-title"><span class="live-dot"></span> Active Voice Streams</div>
+              ${
+                server.activeChannels && server.activeChannels.length > 0
+                  ? server.activeChannels
+                      .map(
+                        (ch) => `
+                    <div class="channel-item">
+                      <span class="channel-name">🔊 ${esc(ch.name)}</span>
+                      <div class="channel-actions">
+                        <a class="stream-link" href="/channel/${ch.id}" target="_blank" rel="noopener">Open Stream ↗</a>
+                        <button class="btn btn-disconnect" onclick="disconnectChannel('${ch.id}', '${server.guildId}')">Disconnect</button>
+                      </div>
+                    </div>
+                  `,
+                      )
+                      .join("")
+                  : '<div class="empty-state">No active voice streams in this server.</div>'
+              }
+            </div>
+
+            <div class="panel-section">
+              <div class="section-title">🗣️ Text-to-Speech</div>
+              <div class="join-control">
+                <input type="text" id="tts-input-${server.guildId}" class="channel-select" placeholder="Type a message for the bot to speak…" maxlength="200">
+                <button class="btn btn-speak" onclick="sendTTS('${server.guildId}')">🔊 Speak</button>
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <div class="section-title">🔒 Permitted Command Roles</div>
+              <p class="hint">Select which roles are allowed to run <code>/join</code> and <code>/leave</code>.</p>
+              <div class="role-grid" id="roles-${server.guildId}">
+                ${
+                  server.roles && server.roles.length > 0
+                    ? server.roles
+                        .map(
+                          (role) => `
+                      <label class="role-tag">
+                        <input type="checkbox" value="${role.id}" ${server.allowedRoles && server.allowedRoles.includes(role.id) ? "checked" : ""}>
+                        <span style="color: ${role.color !== "#000000" ? role.color : "#eef0ff"}">${esc(role.name)}</span>
+                      </label>
+                    `,
+                        )
+                        .join("")
+                    : '<div class="empty-state">No custom roles found in this server.</div>'
+                }
+              </div>
+              <button class="btn btn-save" onclick="saveRoles('${server.guildId}')">💾 Save Role Permissions</button>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+        } catch (err) {
+          console.error("Failed to load admin data:", err);
+          document.getElementById("serversContainer").innerHTML =
+            '<div class="server-card"><div class="empty-state">Failed to load server data. Please refresh the page.</div></div>';
+        }
+      }
+
+      async function joinChannel(guildId) {
+        const select = document.getElementById(`select-${guildId}`);
+        const channelId = select.value;
+        if (!channelId) return alert("Please select a voice channel first.");
+
+        const btn = event.target.closest("button");
+        const original = btn.textContent;
+        btn.textContent = "Connecting…";
+        btn.disabled = true;
+        try {
+          const res = await fetch("/api/admin/join", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ guildId, channelId }),
+          });
+          const result = await res.json();
+          if (res.ok) loadAdminData();
+          else alert(result.error || "Failed to join channel.");
+        } finally {
+          btn.textContent = original;
+          btn.disabled = false;
+        }
+      }
+
+      async function disconnectChannel(channelId, guildId) {
+        if (!confirm("Disconnect bot from this channel?")) return;
+        const res = await fetch("/api/admin/disconnect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channelId, guildId }),
+        });
+        const result = await res.json();
+        if (res.ok) loadAdminData();
+        else alert(result.error || "Failed to disconnect.");
+      }
+
+      async function sendTTS(guildId) {
+        const input = document.getElementById(`tts-input-${guildId}`);
+        const text = input.value.trim();
+        if (!text) return alert("Please enter text to speak.");
+
+        const res = await fetch("/api/admin/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guildId, text }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          input.value = "";
+          // Preview the exact audio the bot is speaking, once, in this browser.
+          if (result.audioUrl) new Audio(result.audioUrl).play().catch(() => {});
+        } else alert(result.error || "Failed to send TTS.");
+      }
+
+      // Speak on Enter
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && e.target.matches('input[id^="tts-input-"]')) {
+          const guildId = e.target.id.replace("tts-input-", "");
+          sendTTS(guildId);
+        }
+      });
+
+      async function saveRoles(guildId) {
+        const checkboxes = document.querySelectorAll(
+          `#roles-${guildId} input[type="checkbox"]:checked`,
+        );
+        const selectedRoleIds = Array.from(checkboxes).map((cb) => cb.value);
+
+        const res = await fetch("/api/admin/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guildId, allowedRoles: selectedRoleIds }),
+        });
+        const result = await res.json();
+        alert(result.message || result.error);
+      }
+
+      loadAdminData();
+    </script>
+  </body>
+</html>
